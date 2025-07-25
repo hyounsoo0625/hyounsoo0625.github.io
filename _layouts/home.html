@@ -22,7 +22,7 @@ refactor: true
     {% assign pinned_size = all_pinned.size | minus: visible_start %}
   {% endif %}
 
-  {% for i in (visible_start..all_pinned.size) limit: pinned_size %}
+  {% for i in (visible_start..visible_end) limit: pinned_size %}
     {% assign posts = posts | push: all_pinned[i] %}
   {% endfor %}
 {% else %}
