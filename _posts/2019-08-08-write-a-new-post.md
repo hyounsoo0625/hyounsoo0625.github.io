@@ -392,8 +392,6 @@ key: value
 ```
 ````
 
-> The Jekyll tag `{% highlight %}` is not compatible with this theme.
-{: .prompt-danger }
 
 #### Line Number
 
