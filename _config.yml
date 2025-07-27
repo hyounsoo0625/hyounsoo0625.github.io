@@ -243,10 +243,10 @@ defaults:
       comments: true
       share: true
       related: true
-  # _pages
+  # _paper
   - scope:
       path: ""
-      type: pages
+      type: paper
     values:
       layout: single
       author_profile: true
