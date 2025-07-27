@@ -243,13 +243,15 @@ defaults:
       comments: true
       share: true
       related: true
-  # _paper
+  # _paper_review
   - scope:
       path: ""
-      type: paper
+      type: paper_review
     values:
       layout: single
       author_profile: true
+      share: true
+      comments: true
   # _teaching
   - scope:
       path: ""
