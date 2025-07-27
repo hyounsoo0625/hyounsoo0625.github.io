@@ -221,7 +221,7 @@ collections:
     permalink: /:collection/:path/
   paper_review:
     output: true
-    permalink: /:collection/:path/
+    permalink: /paper_review/:path/
   publications:
     output: true
     permalink: /:collection/:path/
