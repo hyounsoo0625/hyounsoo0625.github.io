@@ -11,7 +11,7 @@ locale                   : "ko-KR"
 site_theme               : "default"
 title                    : "AI 정리"
 title_separator          : "-"
-name                     : &name "HYOUNSOO KIM"
+name                     : &name "HYOUNSOO\tKIM"
 description              : &description "@Chung-Ang Univ."
 url                      : https://hyounsoo0625.github.io # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io" or if you already have some other page hosted on Github then use "https://[your GitHub username].github.io/[Your Repo Name]"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
@@ -23,22 +23,22 @@ repository               : "hyounsoo0625/hyounsoo0625.github.io"
 author:
   # Biographic information
   avatar           : "profile.png"
-  name             : "Your Sidebar Name"
+  name             : "HYOUNSOO KIM"
   pronouns         : # example: "she/her"  
-  bio              : "Short biography for the left-hand sidebar"
-  location         : "Earth"
-  employer         : "Red Brick University"
+  bio              : "AI 공부 기록"
+  location         : "Seoul"
+  employer         : "Chung-Ang University"
   uri              : # URL
-  email            : "none@example.org" 
+  email            : "hyeonsoo02@gmail.com" 
 
   # Academic websites
   academia         : # URL
   arxiv            : # URL - Update with the correct link to your profile
-  googlescholar    : "https://scholar.google.com/citations?user=PS_CX0AAAAAJ"
+  # googlescholar    : "https://scholar.google.com/citations?user=PS_CX0AAAAAJ"
   impactstory      : # URL
-  orcid            : "http://orcid.org/yourorcidurl"
+  # orcid            : "http://orcid.org/yourorcidurl"
   semantic         : # URL
-  pubmed           : "https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
+  # pubmed           : "https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
   researchgate     : # URL
   scopus           : # URL
 
@@ -46,22 +46,22 @@ author:
   bitbucket        : # Username - Update with your username on the site
   codepen          : # Username
   dribbble         : # Username
-  github           : "academicpages"
-  kaggle           : # Username  
+  github           : "hyounsoo0625"
+  kaggle           : "hyeonsoo2002"  
   stackoverflow    : # User number or user number and name (i.e., use "1" or "1/jeff-atwood")    
 
   # Social media
   artstation       : # Username
-  bluesky          : "bsky.app" # Replace this with you Bluesky username
+  bluesky          : # "bsky.app" # Replace this with you Bluesky username
   facebook         : # Username
   flickr           : # Username
   foursquare       : # Username
   goodreads        : # Username
   google_plus      : # Username
   keybase          : # Username
-  instagram        : # Username
+  instagram        : "hs._.625"
   lastfm           : # Username
-  linkedin         : # Username
+  linkedin         : "hyounsoo-kim-67945b323"
   mastodon         : # URL
   medium           : # URL
   pinterest        : # Username
