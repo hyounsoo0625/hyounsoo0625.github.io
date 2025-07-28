@@ -1,6 +1,6 @@
 ---
 title: "논문 제목"
-layout: post              # 또는 'default', 'publication' 등 사이트에 따라 다름
+layout: post
 collection: paper_review
 ---
 
