@@ -1,6 +1,6 @@
 ---
 title: "Attention Is All You Need"
-layout: post
+layout: single
 collection: paper_review
 author_profile: true
 ---

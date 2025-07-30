@@ -1,6 +1,7 @@
 ---
 permalink: /
 title: "Hyounsoo Kim's AI BLOG"
+layout: single
 author_profile: true
 redirect_from: 
   - /about/
