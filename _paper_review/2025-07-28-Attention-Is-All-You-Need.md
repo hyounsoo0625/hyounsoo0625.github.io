@@ -143,6 +143,7 @@ $$
 
 transformer에서는 input embedding layer과 output embedding layer, softmax 이전의 linear transformation 사이에 동일한 weight matrix을 공유한다. 즉, 세군데에서 동일한 weight를 공유함으로써 parameter의 수를 줄이고 일반화 성능을 높이는 효과를 기대한다.
 embedding layer에서는 해당 weight에 \\(\sqrt{d_{model}}\\)을 곱해준다. 이 scaling은 embedding 값의 분산을 조절하기 위한 것으로, 초기 학습 안정성과 성능 향상에 도움을 줄 수 있다.
+
 ## Positional Encoding
 
 # Why Self-Attention
