@@ -165,6 +165,15 @@
   height: auto;
   -ms-interpolation-mode: bicubic;
 }
+.post_img {
+  width: 20%;
+  height: auto;
+  -ms-interpolation-mode: bicubic;
+  @media(max-width: 767px) {
+    width: 50%;
+    height: auto;
+  }
+}
 
 .page__hero-caption {
   position: absolute;
