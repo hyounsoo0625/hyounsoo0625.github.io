@@ -66,4 +66,74 @@ $$
 Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
 $$
 
-## Multi-Head Attention
+일반적으로 사용하는 attention 함수는 [`additive attention`](#additive-attention)과 [`dot-product(multiplicative) attention`](#dot-product(multiplicative)-attention)을 사용한다.
+
+#### dot-product(multiplicative) attention
+기존 사용하는 방식과 거의 동일하지만 차이점으로 scaling factor인 \\(\sqrt{d_k}\\)가 없다는 차이점이 있다.
+
+#### Additive Attention
+<img src="/images/paper_review/attention-is-all-you-need/additiveAttention.png">
+
+additive attention은 1개의 hidden layer을 가진 feed-forward neural network를 사용해 유사도를 계산한다.
+
+위 두 방식은 이론적으로 복잡도가 비슷하지만 (\\(O(n^2)\\)) dot-product attention은 최적화된 matrix multiplication으로 쉽게 구현할 수 있기 때문에 매우 빠르고 memory 효율도 높다.
+
+이때, \\(d_k\\)가 작은 경우에는 두 방식의 성능이 유사하게 나오지만 \\(d_k\\)가 클수록 additive attention이 scaling이 없는 dot-product attention보다 더 좋은 성능을 낸다. 그 이유는 \\(d_k)\\)가 커질 수록 dot-product의 값이 매우 커져, softmax 함수가 gradient가 거의 0에 가까운 영역으로 진입한다고 추측한다. 이를 완화하기 위해 dot-product 값을 \\(\frac{1}{\sqrt{d_k}}\\)으로 나누어 scaling을 수행한다.
+
+### Multi-Head Attention
+이 논문에서는 query, key, value을 각각 \\(d_{model}\\)의 차원을 그대로 사용하는 대신, \\(h\\) (multi head 수)개의 서로 다른 학습 가능한 linear projection을 통해 각각의 query, key, value을 \\(d_k, d_k, d_v\\)의 차원으로 Linear projection을 하는 것이 더 효과적임을 확인했다. 이를 통해 attention을 병렬로 수행하면 각 head에서 \\(d_v\\)차원의 출력이 생성된다. 이를 concatenate한 후, linear projection을 적용하면 최종 attention의 결과가 된다. 이를 통해 서로 다른 위치에 있는 정보들을 동시에 주목(attend) 할 수 있게 해준다.
+
+이전에 말했다시피 단일 attention head만 사용하면 weight averaging 때문에 표현력이 제한된다.
+
+$$
+MultiHead(Q, K, V) = Concat(head_1, ..., head_h)W^O
+\\
+\quad where\; head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)
+$$
+이때, 사용되는 project 행렬은 다음과 같다.
+- \\(W_i^Q \in R^{d_{model \times d_k}}\\)
+    - query projection
+- \\(W_i^K \in R^{d_{model \times d_k}}\\)
+    - key projection
+- \\(W_i^V \in R^{d_{model \times d_v}}\\)
+    - value projection 
+- \\(W^O \in R^{hd_v \times d_{model}}\\)
+    - final projection
+
+이 논문에서는 총 \\(h = 8\\)개의 병렬 attention layer을 사용한다. 이때, 각 head는 \\(d_{model}\\)이 아니라 다음과 같은 차원을 사용한다.
+
+$$
+d_k = d_v = \frac{d_{model}}{h} = 64
+$$
+
+즉, \\(d_model = 512\\)라고 가정하면 head는 64차원이 된다. 이를 통해 전체 multi-head attention의 게산 비용은 single head attention과 비슷한 수준으로 유지할 수 있다.
+
+### Applications of Attention in our Model
+
+## Position-wise Feed-Forward Networks
+
+## Embeddings and Softmax
+
+## Positional Encoding
+
+# Why Self-Attention
+
+# Training
+
+## Training Data and Batching
+
+## Hardware and Schedule
+
+## Optimizer
+
+## Regularization
+
+# Result
+
+## Machine Translation
+
+## Model Variations
+
+## English Constituency Parsing
+
+# Conclusion

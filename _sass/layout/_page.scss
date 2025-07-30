@@ -166,11 +166,11 @@
   -ms-interpolation-mode: bicubic;
 }
 .post_img {
-  width: 20%;
+  width: 50%;
   height: auto;
   -ms-interpolation-mode: bicubic;
   @media(max-width: 767px) {
-    width: 50%;
+    width: 30%;
     height: auto;
   }
 }
