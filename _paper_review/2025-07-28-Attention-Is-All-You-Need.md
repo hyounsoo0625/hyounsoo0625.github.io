@@ -2,6 +2,7 @@
 title: "Attention Is All You Need"
 layout: post
 collection: paper_review
+author_profile: true
 ---
 
 # Introduction
