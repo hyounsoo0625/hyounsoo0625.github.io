@@ -109,11 +109,40 @@ $$
 즉, \\(d_model = 512\\)라고 가정하면 head는 64차원이 된다. 이를 통해 전체 multi-head attention의 게산 비용은 single head attention과 비슷한 수준으로 유지할 수 있다.
 
 ### Applications of Attention in our Model
+> Transformer는 multi-head attention을 다음 세가지 방식으로 사용한다.
+#### Encoder-Decoder Attention(Cross-Attention)
+Encoder-Decoder Attention Layer에서 key와 value는 encoder의 출력에서 가져온다. 이렇게 함으로써, decoder의 모든 위치는 input sequence 전체 위치에 attention을 기울일 수 있다.
+> 즉, encoder는 입력 전체를 요약하고, decoder는 그 요약 정보에 접근하여 출력 단어를 생성한다.
+#### Encoder Self-Attention
+encoder에는 self-attention layer가 포함되어 있다. 이 self-attention layer에서는 query, key, value가 모두 동일한 입력에서 나온다. 이 경우, encoder 내부에서 이전 layer의 출력이 다음 layer의 입력이 된다. 따라서 encoder 내의 각 위치는 encoder 이전 layer의 모든 위치에 주의를 기울일 수 있다.
+> 즉, encoder는 입력 sequence 전체의 단어들 간 관계를 스스로 학습하며, 순서에 얽매이지 않고 모든 위치를 참고할 수 있다.
+#### Decoder Self-Attention (with Masking)
+마찬가지로, decoder 내의 self-attention layer는 decoder의 각 위치가 그 위치까지의 모든 decoder 위치에 주의를 기울일 수 있다. 하지만 auto-regressive 속성을 유지하기 위해 오른쪽(미래 방향)의 정보가 왼쪽(과거 위치)으로 흘러가는 것(leftward information flow)을 막아야 한다. 이를 위해 scaled dot-product attention 내부에서 masking을 수행한다. 즉, softmax 입력에서 허용되지 않은 연결(미래 정보)에 해당하는 값들은 \\(-\inf\\)로 설정하여 softmax의 결과가 0이 되도록 만든다
+> 즉, decoder는 다음 단어를 예측할 때, 아직 생성되지 않은 미래 단어들을 참고하지 못하도록 제한한다.
 
 ## Position-wise Feed-Forward Networks
+attention sub-layers 외에도, encoder와 decoder의 각 layer에는 fully connected feed-forward network를 포함하고 있으며, 이 네트워크는 입력 sequence의 각 위치에 개별적으로 그리고 동일한 방식으로 적용된다. 이 feed-forward network는 2개의 linear transformation으로 구성되어 있으며, 그 사이에 ReLU activate function이 적용된다. 수식으로는 다음과 같이 표현된다.
+
+$$
+FFN(x) = max(0, xW_1 + b_1)W_2 + b_2
+$$
+- \\(x\\): input vector
+- \\(W_1, W_2\\): weight matrix
+- \\(b_1, b_2\\): bias vector
+- \\(max(0, ...)\\): ReLU activate function
+
+이 linear  transformation은 서로 다른 위치에 대해서는 동일한 방식으로 적용되지만, layer가 다르면 서로 다른 parameter을 사용한다. 이 구조는 kernel 크기 1짜리 convolution 연산 2개로도 표현할 수 있다.
+쉽게 얘기하면 입력 sequence 각각의 token vector에 대해 동일한 계산을 반복한다는 것이 word1, word2, ...에 모두 동일한 FFN으로 계산되고, 각각 layer마다 다른 독립된 FFN을 사용한다.
+> 즉, 각 위치마다 독립적으로 적용되는 연산이다.
+
+입력과 출력의 차원은 \\(d_{model} = 512\\)이고, hidden layer의 차원은 \\(d_{ff} = 2048\\)이다. 즉, input vector는 먼저 2048차원으로 확장된 후, 다시 512차원으로 줄어든다.
 
 ## Embeddings and Softmax
+다른 sequence transduction model들과 마찬가지로 학습된 embedding을 사용해 input token과 output token을 차원 \\(d_{model}\\)을 갖는 vector로 변환한다. 또한 일반적으로 사용되는 학습된 linear transformation과 softmax function을 사용하여 decoder의 출력을 다음 token의 확률 분포로 변환한다.
+> 즉, decoder의 마지막 출력은 V차원으 확률 분포로 바뀌며, V는 vocabulary 크기가 된다.
 
+transformer에서는 input embedding layer과 output embedding layer, softmax 이전의 linear transformation 사이에 동일한 weight matrix을 공유한다. 즉, 세군데에서 동일한 weight를 공유함으로써 parameter의 수를 줄이고 일반화 성능을 높이는 효과를 기대한다.
+embedding layer에서는 해당 weight에 \\(\sqrt{d_{model}}\\)을 곱해준다. 이 scaling은 embedding 값의 분산을 조절하기 위한 것으로, 초기 학습 안정성과 성능 향상에 도움을 줄 수 있다.
 ## Positional Encoding
 
 # Why Self-Attention
