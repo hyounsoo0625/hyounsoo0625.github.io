@@ -166,11 +166,14 @@
   -ms-interpolation-mode: bicubic;
 }
 .post_img {
-  width: 50%;
+  width: 80%;
   height: auto;
+  // 중간으로 정렬
+  margin: 0 auto;
+  display: block;
   -ms-interpolation-mode: bicubic;
   @media(max-width: 767px) {
-    width: 30%;
+    width: 80%;
     height: auto;
   }
 }

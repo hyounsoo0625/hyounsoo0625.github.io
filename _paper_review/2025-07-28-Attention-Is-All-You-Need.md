@@ -72,7 +72,7 @@ $$
 기존 사용하는 방식과 거의 동일하지만 차이점으로 scaling factor인 \\(\sqrt{d_k}\\)가 없다는 차이점이 있다.
 
 #### Additive Attention
-<img src="/images/paper_review/attention-is-all-you-need/additiveAttention.png">
+<img src="/images/paper_review/attention-is-all-you-need/additiveAttention.png" class="post_img">
 
 additive attention은 1개의 hidden layer을 가진 feed-forward neural network를 사용해 유사도를 계산한다.
 
@@ -87,9 +87,11 @@ additive attention은 1개의 hidden layer을 가진 feed-forward neural network
 
 $$
 MultiHead(Q, K, V) = Concat(head_1, ..., head_h)W^O
-\\
+$$
+$$
 \quad where\; head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)
 $$
+
 이때, 사용되는 project 행렬은 다음과 같다.
 - \\(W_i^Q \in R^{d_{model \times d_k}}\\)
     - query projection
@@ -110,12 +112,15 @@ $$
 
 ### Applications of Attention in our Model
 > Transformer는 multi-head attention을 다음 세가지 방식으로 사용한다.
+
 #### Encoder-Decoder Attention(Cross-Attention)
 Encoder-Decoder Attention Layer에서 key와 value는 encoder의 출력에서 가져온다. 이렇게 함으로써, decoder의 모든 위치는 input sequence 전체 위치에 attention을 기울일 수 있다.
 > 즉, encoder는 입력 전체를 요약하고, decoder는 그 요약 정보에 접근하여 출력 단어를 생성한다.
+
 #### Encoder Self-Attention
 encoder에는 self-attention layer가 포함되어 있다. 이 self-attention layer에서는 query, key, value가 모두 동일한 입력에서 나온다. 이 경우, encoder 내부에서 이전 layer의 출력이 다음 layer의 입력이 된다. 따라서 encoder 내의 각 위치는 encoder 이전 layer의 모든 위치에 주의를 기울일 수 있다.
 > 즉, encoder는 입력 sequence 전체의 단어들 간 관계를 스스로 학습하며, 순서에 얽매이지 않고 모든 위치를 참고할 수 있다.
+
 #### Decoder Self-Attention (with Masking)
 마찬가지로, decoder 내의 self-attention layer는 decoder의 각 위치가 그 위치까지의 모든 decoder 위치에 주의를 기울일 수 있다. 하지만 auto-regressive 속성을 유지하기 위해 오른쪽(미래 방향)의 정보가 왼쪽(과거 위치)으로 흘러가는 것(leftward information flow)을 막아야 한다. 이를 위해 scaled dot-product attention 내부에서 masking을 수행한다. 즉, softmax 입력에서 허용되지 않은 연결(미래 정보)에 해당하는 값들은 \\(-\inf\\)로 설정하여 softmax의 결과가 0이 되도록 만든다
 > 즉, decoder는 다음 단어를 예측할 때, 아직 생성되지 않은 미래 단어들을 참고하지 못하도록 제한한다.
@@ -149,15 +154,48 @@ Transformer는 recurrence나 convolution을 포함하지 않기 때문에 sequen
 $$
 PE_{(pos, 2i)} = sin(\frac{pos}{10000^{\frac{2i}{d_{model}}}})
 $$
+
 $$
 PE_{(pos, 2i+1)} = cos(\frac{pos}{10000^{\frac{2i}{d_{model}}}})
 $$
-- pos : 위치
-- i : 차원 index
+- \\(pos\\) : 위치
+- \\(i\\) : 차원 index
 
 즉, positinal encoding의 각 차원은 하나의 사인파에 대응된다. 이 사인파들의 파장은 \\(2\pi\\)부터 \\(10000 \cdot 2\pi\\)까지 기하급수적으로 증가한다. 즉, 낮은 차원은 빠르게 변하고, 높은 차원은 천천히 변하는 sine/cosine 패턴을 가지게 된다. 이 함수를 사용하는 이유는 상대적인 위체에 따라 쉽게 attention을 배울 수 있을거라 가정했기 때문이다. 고정된 거리 \\(k\\)만큼 떨어진 위치 \\(PE_{pos+k}\\)의 positional encoding은 \\(PE_{pos}\\)의 positional encoding의 linear function으로 표현될 수 있기 때문이다. 이 논문에서는 sinusoidal의 positional encoding을 선택했는데 그 이유로, 학습 시보다 더 긴 sequence에 대해서도 일반화가 가능할 것으로 기대되었기 때문이다. 즉, 학습한 길이 범위를 벗어난 입력에서도 위치 정보를 생성할 수 있다는 것이 sine/cosine 방식의 장점이 된다.
 
 # Why Self-Attention
+self-attention layer와 일반적으로 사용되는 recurrent layer, convolutional layer를 비교한다. 이 layer들은 \\((x_1, ..., x_n)\\) 형태의 가변 길이 sequence를 동일한 길이의 sequence인 \\((z_1, ..., z_n)\\)으로 매핑하는데 사용되며 \\(x_i, z_i\\)는 \\(R^d\\)에 속한다. 이는 sequence transduction에서 encoder와 decoder의 hidden layer에서 흔히 나타나는 구조이다. Self-attention을 사용하는 근거를 설명하기 위해 3가지의 기준을 고려하였다고 한다.
+1. Total computational complexity per layer (layer 당 전체 계산 복잡도)
+2. Amount of computation that can be parallelized (병렬화가 가능한 계산의 양)
+3. path length between long-range dependencies in the network(network 내에서 장거리 의존 사이의 경로 길이)
+
+장거리 의존 관계를 학습하는 능력에 영향을 주는 주요 요소 중 하나는 forward, backward 신호가 network를 통해 이동해야 하는 경로의 길이가 된다. 이때, 입력과 출력 sequence 내 모든 위치 쌍 간의 경로가 짧을수록, 장거리 의존성을 학습하기 쉬워진다.
+
+<img src="/images/paper_review/attention-is-all-you-need/table1.png" class="post_img">
+
+위 표에서 보다시피 self-attention layer는 모든 위치를 연결하면서 상수의 연산만을 필요로 한다. 이에 반변, recurrent layer는 \\(O(n)\\)의 sequential operation이 필요하다. 즉, self-attention은 순차 계산이 거의 없고 병렬 처리에 유라하는 뜻이 된다.
+
+computational complexity 측면에서, sequence 길이 n이 representation 차원 d보다 작을 경우, self-attention은 recurrent layer보다 더 빠르다. 이는 최신 machine translation에서 사용되는 word-piece나 byte-pair 표현 방식에서 자주 나타나는 상황이다.
+
+### Word-piece
+> 단어를 의미 있는 더 작은 조각(subword)으로 분리하는 방식의 tokenizer
+
+자주 등장하는 단어는 그대로 보존하고, 낮은 빈도의 단어는 여러 subword로 분해한다.
+- 단어: unhappiness
+    - tokenize 결과: [un, ##happiness]
+- 단어: playfully
+    - tokenize 결과: [play, ##full, ##ly]
+
+이는 out-of vocabulary를 피할 수 있다는 장점이 있다. 즉, 생소한 단어도 subword 조합으로 분해해 처리가 가능하다. 이는 영어와 같은 알파벳 기반 언어에서 효과적이다.
+
+### Byte-pair
+초기에 모든 단어를 문자 단위로 쪼갠다. 이후, 가장 자주 등장하는 문자 쌍을 병합하고 병합된 쌍을 하나의 새로운 token으로 간주하고 반복한다. 이때, 원하는 vocab size까지 진행한다.
+
+매우 긴 sequence를 다루는 작업의 computational 성능을 향상시키기 위해, self-attention을 출력 위치를 중심으로 입력 sequence 내 반경 r 크기의 이웃만 고려하도록 제한할 수 있다. 이 경우, 최대 경로 길이는 \\(O(n/r)\\)로 증가하게 된다.
+
+kernel 너비 k가 n보다 작은 하나의 convolutional layer는 모든 입력-출력 위치 쌍을 연결하지 못한다. 모든 위치를 연결하려면 contiguous kernel의 경우, O(n/k)개의 convolution layer을 쌓아야 하며, dilated convolution의 경우에는 \\(O(log_k(n))\\)개가 필요하다. 이로 인해, network 내 두 위치 사이의 최장 경로가 증가하게 된다. 일반적으로 convolutional layer는 recurrent layer보다 computational 비용이 더 크며, 거의 k배에 이른다고 한다. 하지만 separable convolution을 사용하면 복잡도를 \\(O(k\cdot n\cdot d + n\cdot d^2)\\)로 줄일 수 있다고 한다.
+
+하지만, k=n인 경우에도 separable convolution의 복잡도는 self-attention layer와 point-wise feed-forward layer의 조합과 동일하다. 즉, 연산량 면에서 transformer의 구조와 유사하다. 추가적인 장점으로 self-attention을 통해 해석 가능한 모델을 만드는데 도움이 될 수 있다. 즉, 각 attention head는 서로 다른 역할을 학습하며, 문장의 문법적, 의미적 구조와 관련된 행동을 보인다고 한다.
 
 # Training
 
