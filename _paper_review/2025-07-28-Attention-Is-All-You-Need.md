@@ -198,21 +198,88 @@ kernel 너비 k가 n보다 작은 하나의 convolutional layer는 모든 입력
 하지만, k=n인 경우에도 separable convolution의 복잡도는 self-attention layer와 point-wise feed-forward layer의 조합과 동일하다. 즉, 연산량 면에서 transformer의 구조와 유사하다. 추가적인 장점으로 self-attention을 통해 해석 가능한 모델을 만드는데 도움이 될 수 있다. 즉, 각 attention head는 서로 다른 역할을 학습하며, 문장의 문법적, 의미적 구조와 관련된 행동을 보인다고 한다.
 
 # Training
-
 ## Training Data and Batching
+약 450만개의 문장 쌍으로 구성된 표준 WMT 2014 English-German dataset을 사용해 훈련을 진행.
+- Byte-Pair Encoding (BPE) 방식
+    - 37,000개의 token으로 구성된 vocabulary 생성
+
+English-to-French 쌍의 경우 3,600만 개의 문장 쌍이 포함된 WMT 2014 English-French dataset을 사용하였고, 32,000개의 word-piece vocabulary로 token을 분할하였다. 각 train batch는 약 25,000개의 source token과 25,000개의 target token을 포함하는 문장 쌍 집합으로 구성되었다.
 
 ## Hardware and Schedule
+- 8개의 NVIDIA P100 GPU
+- 한 번의 training step: 약 0.4s
+- Base model을 100,000 step의로 12시간동안 훈련
+- Big model은 한 step 당 1.0s 걸리고, 300,000 step(약 3.5일)동안 훈련 진행
 
 ## Optimizer
+`Adam Optimizer` 사용
+- \\(\beta_1 = 0.9\\)
+- \\(\beta_2 = 0.98\\)
+- \\(\epsilon = 10^{-9}\\)
+
+이때, learning rate는 훈련 도중 다음 수식에 따라 변화 시킴.
+$$
+lrate = d_{model}^{-0.5} \cdot min(step_num^{-0.5}, step_num \cdot warmup_steps^{-1.5})
+$$
+이는 훈련 초반에 학습률을 linear하게 증가시킨 후, step 수의 inverse square root에 비례해 감소시켰다. 이때, \\(warmup_steps=4000\\)을 사용했다.
 
 ## Regularization
+2가지 정규화 기법 사용
+### Residual Dropout
+각 sub-layer의 출력에 dropout을 적용한 후, 이를 sub-layer의 입력에 더하고 normalization을 수행한다. encoder와 decoder stack에서 embedding과 positional encoding에서도 dropout을 적용한다.
+
+Base model에서는 dropout의 비율을 \\(P_{drop} = 0.1\\)로 설정하였다고 한다.
+
+### Label Smoothing
+훈련 중 label smoothing 기법을 적용하였고, smoothing의 값은 \\(\epsilon_{ls} = 0.1\\)로 설정하였다고 한다. 이는 모델이 정답에 대해 덜 확신을 갖게 되므로 perplexity는 증가하지만 결과적으로 accuracy와 BLEU score는 향상되었다고 한다.
 
 # Result
-
 ## Machine Translation
+<img src="/images/paper_review/attention-is-all-you-need/table2.png" class="post_img"/>
+
+WMT 2014 English-to-German 번역 task에서 transformer (big) model은 기존 모델보다 BLEU score가 2.0 이상 높아졌다. sota BLEU score로 28.4를 달성하였다.
+
+<img src="/images/paper_review/attention-is-all-you-need/table3.png" class="post_img"/>
+
+이 모델의 구성은 위 표에서 마지막 행에 제시되어 있는 것과 같다. P100 GPU 8rodptj 3.5일 동안 학습하였으며, base model도 기존 공개된 모델 및 emsemble보다 뛰어난 성능을 보이며, 기존 모델보다 훨씬 낮은 학습 비용으로 훈련되었다.
+
+WMT 2014 English-to-French 번역 task에서는 transformer (big) model이 BLEU score 41.0을 달성하여 기존 공개된 single model 중 가장 높은 성능을 기록하였다. 이는 이전 sota model의 1/4 미만의 학습 비용으로 훈련되었다고 한다. English-to-French용 big model은 dropout을 \\(P_{drop} = 0.1\\)을 사용하였으며, English-to-German보다 0.3 낮은 값을 사용하였다.
+
+base model의 경우 마지막 5개의 checkpoint를 평균내어 single model을 구성하였으며, 각 checkpoint는 10분 간격으로 저장되었다고 한다. big model에서는 마지막 20개의 checkpoint를 평균내었다고 한다. Inference 시에는 beam search를 사용하였고, beam size는 4, length penalty \\(\alpha = 0.6\\)을 사용했다고 한다. max output length는 input length의 +50으로 설정하였지만, early stopping을 사용했다고 한다.
 
 ## Model Variations
+> base model을 여러 방식으로 변형해 transformer의 구성 요소 중 어떤 것이 중요한지 평가
+
+- English-to-German development set인 newsstest2013에서 성능 변화 측정
+- checkpoint averaging은 사용 안함
+
+table 3의 (A)에서 attention head 수와 attention key/value의 차원을 변경하면서 계산량은 일정하게 유지하였을 때, single-head attention은 BLEU score가 0.9 낮았고, head 수가 지나치게 많아도 성능이 저하되었다고 한다.
+
+
+(B)에서는 attention key 차원인 \\(d_k\\)를 줄이면 모델 성능이 덜어지는 것을 관찰했다고 한다.
+
+
+(C)와 (D)에선 model이 커질수록 성능이 좋아지고, dropout이 overfitting 방지에 효과적임을 확인했다.
+
+
+(E)에서는 sinusoidal positional encoding을 learned positional embedding로 대체했지만, base model과 거의 동일한 성능을 보였다고 한다.
 
 ## English Constituency Parsing
+transformer가 다른 task에서도 적용이 가능한지 다른 `English
+constituency parsing` task에서 확인.
+
+이때, 어려움이 발생
+- 출력이 강한 구조적 제약을 받음
+- 출력 sequence가 입력보다 훨씬 김
+- RNN 기반 sequence-to-sequence model들은 data가 적은 상황에서 sota를 달성하지 못한 전례가 있음
+
+훈련은 \\(d_{model}=1024\\)인 4-layer transformer을 Penn Treebank의 WSJ 부분에서 훈련했다고 하고, 약 4만개의 문장을 포함한다고 한다. 또, semi-supervised 설정에서도 학습하였고, 이때, high-confidence, BerkeleyParser data로부터 얻은 약 1,700만개의 문장이 사용되었다고 한다.
+
+이때, WSJ-only 설정에서는 16K vocab, semi-supervised 설정에서는 32K vocab을 사용했다고 한다. hyperparameter는 Section 22 development set에서 dropout(attention, residual), learning rate, beam size만 약간의 실험을 통해 조정되었고, 나머지는 English-to-German base model과 동일하게 유지하였다고 한다. 또, inference는 max output lenght = input length + 300을 사용하고, beam size=21, \\(\alpha=0.3\\)으로 고정하였다고 한다.
+
+<img src="/images/paper_review/attention-is-all-you-need/table4.png" class="post_img"/>
+
+table 4에 따르면 특정 task에 특화된 tuning을 하지 않았음에도 transformer는 놀라운 성능을 보였다고 한다. 이는 Recurrent Neural Network Grammar을 제외한 모든 기존 모델보다 좋은 성능을 달성하였고, RNN 기반 sequence-to-sequence model들과 달리 tansformer는 WSJ 4만 문장만 사용했을 때도 BerkeleyParser을 능가했다고 한다.
 
 # Conclusion
+Transformer는 attention mechanism만을 기반으로 하는 최초의 sequence transduction model로써, 기존의 encoder-decoder 구조에서 일반적으로 사용되던 recurrent layer을 모두 제거하고, multi-head self-attention으로 완전히 대체한 모델이다. 이를 통해 다른 task에도 적용할 가능성을 보였고, text 이외의 다른 modality(ex. image, audio, video...)을 포함하는 문제로 확정하고, local하고 제한된 attention mechanism을 연구해 대규모 입력과 출력을 효율적으로 처리하는 방안도 연구한다고 한다.
