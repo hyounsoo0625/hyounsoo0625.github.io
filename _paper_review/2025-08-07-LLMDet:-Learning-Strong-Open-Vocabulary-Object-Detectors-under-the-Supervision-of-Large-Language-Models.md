@@ -1,3 +1,10 @@
+---
+title: "LLMDet: Learning Strong Open-Vocabulary Object Detectors under the Supervision of Large Language Models"
+layout: single
+collection: paper_review
+author_profile: true
+---
+
 # Introduction
 `Open-vocabulary Object Detection`은 사용자가 입력한 text label을 기반으로 클래스를 탐지하는 task이다. `GLIP`은 object detection과 phrase grounding을 region-word contrastive pre-training을 통해 통합하였다. 이를 통해 학습된 표현은 의미적으로 풍부한 특성을 가진다.
 
@@ -61,14 +68,50 @@ InternVL은 CLIP과 유사한 vision encoder를 6B parameter 규모로 확장하
 
 # GroundingCap-1M Dataset
 ## Data Formulation
+
 <img src="/images/paper_review/LLMDet:-Learning-Strong-Open-Vocabulary-Object-Detectors-under-the-Supervision-of-Large-Language-Models/figure2.png" class="post_img"/>
-LLMDet를 grounding loss와 captionng loss로 학습할 수 있도록 하기 위해 각 training sample을 4개의 요소로 구성된 \\((I, T_g, B, T_c\\)로 정의한다. 각 요소는 다음과 같다.
+
+LLMDet를 grounding loss와 captionng loss로 학습할 수 있도록 하기 위해 각 training sample을 4개의 요소로 구성된 \\((I, T_g, B, T_c)\\)로 정의한다. 각 요소는 다음과 같다.
 
 - \\(I\\) : image
 - \\(T_g\\) : short grounding text
 - \\(B\\) : annotated bounding boxes mapped by phrase in the grounding text
 - \\(T_c\\) : detailed caption for the whole image
 
+이때 전체 이미지를 위한 detailed caption (\\(T_c)\\)을 수집할 때, 다음 2가지 원칙을 따른다.
+
+1. caption은 가능한 많은 detail을 포함해야 한다.<br\>
+caption이 object의 종류, 질감, 색상, object의 부분, object의 동작, 정확한 위치, 이미지 내 text 등을 묘사하여 정보가 풍부하길 기대한다.
+2. caption은 image에 대한 사실 기반의 detail만 포함해야 한다.<br/>
+상상에 기반한 설명이나 추론 중심의 caption이 너무 많을 경우 정보 밀도가 떨어지거나 model 학습에 방해가 될 수 있다. 따라서 사실 기반이면서 정보 밀도가 높은 caption을 추구하며 학습 효율을 놓인다.
+
+## Dataset Construction
+Data 구축 비용을 절감하기 위해 기존에 존재하는 bounding box 또는 detailed caption을 보유한 dataset을 기반으로 작업한다. 기존 연구를 통해 object detection dataset, grounding dataset, image-text dataset에서 데이터를 수집한다.
+
+- **Object detection dataset**
+    - COCO와 V3Det을 사용
+    - ShareGPT4V에서 168k개의 detailed caption을 수집
+    - ASv2로부터 42k개의 caption을 수집하였으며, object 간 관계에 집중된 caption
+    - V3Det는 13,000개 이상의 category를 보유하고 있어, vocabulary를 크게 향상 가능
+        - V3Det의 caption은 Qwen2-VL-72b를 활용해 직접 생성하였으며, prompt는 위 그림과 같이 제시되었다.
+    - GLIP을 따르며, detection dataset의 grounding text는 클래스 이름들을 연결한 문자열로 구성된다. (ex. "char. fork. cup. cow")
+- **Grounding dataset**<br/>
+널리 사용되는 GoldG를 채택하였으며, GQA, Flickr30k를 포함한다. 이때, 원본 annotation에는 각 image에 대해 짧은 grounding text들이 다수 존재하지만, 효율적으로 처리하고 negative sample을 늘리기 위해, bounding box 충돌이 없는 gorunding text들을 간단한 문자열 연결 방식으로 하나로 병합했으며, 이로 인해 dataset은 769k에서 437k로 downsampling이 되었다. 또한, detailed caption은 Qwen2-VL-72b를 통해 직접 생성하였다.
+- **Image-text dataset**<br/>
+LCS-558k를 사용했으며, 이는 LLaVA-OneVision과 ShareGPT4v로부터 detailed caption이 포함되어 있다. 이 dataset에 대한 pseudo box를 생성하기 위해 caption에서 noun phrases를 language parser을 이용해 추출한 후, MM Grounding DINO(Swin-L)을 사용해 각 phrase에 대한 bounding box를 생성했다. 3개 미만의 bounding box만 존재하는 image는 제거하였고, grounding text는 detection dataset과 마찬가지로 phrase를 연결하여 구성했다.
+
+최종 dataset인 `GroundingCap-1M`은 총 112만(1120k)개의 sample을 포함하였다.
+
+<img src="/images/paper_review/LLMDet:-Learning-Strong-Open-Vocabulary-Object-Detectors-under-the-Supervision-of-Large-Language-Models/table1.png" class="post_img"/>
+
+## Quality Verification
+data 수집 과정에서 prompt를 신중히 설계하고 접근 가능한 모델인 `Qwen2VL-72b`를 사용했다고 한다. 이 model은 학습 과정에서 hallucination을 방지하기 위해 많은 노력이 들어갔다고 한다. 하지만 여전히 noise가 있어 이를 처리하기 위해 후처리 과정을 거쳤다.
+1. 추측성 문구 제거<br/>
+model이 상상이나 추론을 피하도록 prompt를 제공했음에도 불구하고, "indication", "suggesting", "possibly" 등과 같은 단어로 추론을 포함하는 경우가 많기 때문에 이런 단어가 포함된 문장을 제거한다.
+2. 무의미한 caption 제거<br/>
+"In the image, a man a man a man..."(반복되는 문장) 혹은 "Sorry, I can not answer the question."과 같은 문장을 거러내기 위해 규칙 기반 filtering을 설계했다.
+3. Detail 강화
+caption이 100 token 미만인 이미지에 대해서는, Qwen2VL-72b를 이용해 재생성을 수행하여 detail을 보완했다. 이러한 이중 검증 mechanism을 통해 데이터 품질을 확보했으며, 후처리 이후 각 caption은 평균적으로 약 115 단어를 포함하게 되었다. 정량적 분석은 [Section 5.3](#5.3)에서 확인해 볼 수 있다.
 
 # Training LLMDet under the Supervision of Large Language Models
 
