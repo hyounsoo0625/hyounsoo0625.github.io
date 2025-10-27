@@ -69,7 +69,7 @@ InternVL은 CLIP과 유사한 vision encoder를 6B parameter 규모로 확장하
 # GroundingCap-1M Dataset
 ## Data Formulation
 
-<img src="/images/paper_review/LLMDet:-Learning-Strong-Open-Vocabulary-Object-Detectors-under-the-Supervision-of-Large-Language-Models/figure2.png" class="post_img"/>
+<img src="/images/paper_review/LLMDet-Learning-Strong-Open-Vocabulary-Object-Detectors-under-the-Supervision-of-Large-Language-Models/figure2.png" class="post_img"/>
 
 LLMDet를 grounding loss와 captionng loss로 학습할 수 있도록 하기 위해 각 training sample을 4개의 요소로 구성된 \\((I, T_g, B, T_c)\\)로 정의한다. 각 요소는 다음과 같다.
 
