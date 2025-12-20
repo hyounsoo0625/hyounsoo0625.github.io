@@ -29,7 +29,7 @@ NeRF는 ray가 3D space을 통과할 때, 그 경로를 따라 연속적인 적�
 해당 연구는 MLP을 사용해 5D coordinate $\(x, y, z, \theta, \phi\)$로부터 하나의 volume density와 view-dependent RGB color를 예측하도록 한다.
 특정 viewpoint에서 NeRF를 rendering하려면 3개의 step이 필요하다.
 
-<img src="/images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig2.png" />
+<img src="images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig2.png" />
 
 1. camera ray들을 scene에 따라가며 sampling된 3D 점들의 집합을 생성하고, 2. 그 점들과 해당하는 2D viewing directions을 신경망의 입력으로 넣어 색과 밀도 출력을 얻은 뒤, 3. 고전적인 volume rendering 기법으로 이 색과 밀도들을 누적하여 2D 이미지를 만든다. 이 과정은 미분 가능하기 때문에, 관측된 각 image와 해당 표현으로부터 rendering한 view간 오차를 경사하강법으로 최소화하여 모델을 최적화 한다.
 
@@ -58,11 +58,11 @@ Mesh는 3D object의 표면을 표현하여 3개 이상의 정점으로 이루�
 
 x $\rightarrow$ fc $\times$ 8 $\rightarrow$ $\sigma$, feature vector
 
-<img src="/images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig3.png" />
+<img src="images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig3.png" />
 
 위 그림을 보면 입력된 view direction을 어떻게 사용하여 non-Lambertian effects를 표현하는지 예시를 보여주고 있다. non-Lambertian effects는 보는 각도에 따라 물체의 색상이나 밝기가 달라지는 현상이다. lambertian 표면은 빛을 모든 방향으로 균일하게 분산시킨다. 따라서 어느 각도에서 보든 해당 지점의 색상과 밝기가 동일하기 보이는 반면 Non-Lambertian은 빛을 특정 방향으로 강하게 반사하여 보는 각도에 따라 표면의 색상이나 밝기가 크게 달라진다.
 
-<img src="/images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig4.png" />
+<img src="images/paper_review/NeRF-Representing-Scenes-as-Neural-Radiance-Fields-for-View-Synthesis/fig4.png" />
 
 위 그림은 view dependence 없이 즉, 입력으로 $x$만 사용했을 때 학습된 모델은 specularities를 잘 표현하지 못하는 어려움이 있다.
 
