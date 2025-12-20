@@ -13,9 +13,9 @@ Attention mechanism은 다양한 task에서 설득력 있는 sequence modeling �
 # Background
 순차적 계산을 줄이려는 목표는 `Extended Neural GPU`, `ByteNet`, `ConvS2S` 모델들의 기반이 된다.
 
-<img src="images/paper_review/attention-is-all-you-need/bytenet.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/bytenet.png" />
 
-<img src="images/paper_review/attention-is-all-you-need/ConvS2S.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/ConvS2S.png" />
 
 이 모델들은 CNN을 사용하며, input과 output의 모든 위치에 대해 hidden representation을 병렬로 계산한다. 이는 서로 떨어진 임의의 input 또는 output 위치 사이의 정보를 연결하기 위해 필요한 연산 횟수가 위치 간 거리의 증가에 따라 달라지며, ConvS2S의 경우 linear, ByteNet의 경우 logarithmic으로 증가하여 떨어진 위치 간 dependency를 학습하는 것이 더 어려워진다.
 
@@ -29,7 +29,7 @@ Transformer는 sequence-aligned RNN이나 convolution을 전혀 사용하지 않
 대부분의 neural sequence transduction model은 encoder-decoder 구조로 구성되어 있다. 즉, input sequence로 $(x_1, ..., x_n)$이 주어지면 연속된 표현인 $z=(z_1, ..., z_n)$으로 변환되고, $z$를 decoder에 주어지면 output sequence인 $(y_1, ..., y_m)$을 한번에 하나씩 생성한다. 이때, 각 단계에서 model은 auto-regressive이며, 다음을 생성할 때, 이전에 생성된 symbol을 추가 입력으로 사용한다.
 아래의 구조는 transformer의 전체 구조를 나타낸 그림이다. 이때, 왼쪽과 오른쪽에 각각 encoder와 decoder에 대해 stacked self-attention과 point wise, fully connected layer을 사용한다.
 
-<img src="images/paper_review/attention-is-all-you-need/transformer.png"/>
+<img src="../../images/paper_review/attention-is-all-you-need/transformer.png"/>
 
 ## Encoder and Decoder Stacks
 ### Encoder
@@ -49,7 +49,7 @@ Attention은 query와 key-value 쌍의 집합을 출력에 mapping하는 것으�
 
 ### Scaled Dot-Product Attention
 
-<img src="images/paper_review/attention-is-all-you-need/attention.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/attention.png" />
 
 attention의 입력은 차원이 $d_k$인 query와 key, 차원이 $d_v$인 value로 구성된다.
 이때, query와 모든 key 간의 dot product을 계산한 후, 각 계산 결과를 $sqrt(d_k)$로 나눈다. 이후, softmax function을 적용해 각 value에 대한 weight을 얻는다.
@@ -65,7 +65,7 @@ $$
 기존 사용하는 방식과 거의 동일하지만 차이점으로 scaling factor인 $\sqrt{d_k}$가 없다는 차이점이 있다.
 
 #### Additive Attention
-<img src="images/paper_review/attention-is-all-you-need/additiveAttention.png" class="post_img">
+<img src="../../images/paper_review/attention-is-all-you-need/additiveAttention.png" >
 
 additive attention은 1개의 hidden layer을 가진 feed-forward neural network를 사용해 유사도를 계산한다.
 
@@ -164,7 +164,7 @@ self-attention layer와 일반적으로 사용되는 recurrent layer, convolutio
 
 장거리 의존 관계를 학습하는 능력에 영향을 주는 주요 요소 중 하나는 forward, backward 신호가 network를 통해 이동해야 하는 경로의 길이가 된다. 이때, 입력과 출력 sequence 내 모든 위치 쌍 간의 경로가 짧을수록, 장거리 의존성을 학습하기 쉬워진다.
 
-<img src="images/paper_review/attention-is-all-you-need/table1.png" class="post_img">
+<img src="../../images/paper_review/attention-is-all-you-need/table1.png" >
 
 위 표에서 보다시피 self-attention layer는 모든 위치를 연결하면서 상수의 연산만을 필요로 한다. 이에 반변, recurrent layer는 $O(n)$의 sequential operation이 필요하다. 즉, self-attention은 순차 계산이 거의 없고 병렬 처리에 유라하는 뜻이 된다.
 
@@ -228,11 +228,11 @@ Base model에서는 dropout의 비율을 $P_{drop} = 0.1$로 설정하였다고 
 
 # Result
 ## Machine Translation
-<img src="images/paper_review/attention-is-all-you-need/table2.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/table2.png" />
 
 WMT 2014 English-to-German 번역 task에서 transformer (big) model은 기존 모델보다 BLEU score가 2.0 이상 높아졌다. sota BLEU score로 28.4를 달성하였다.
 
-<img src="images/paper_review/attention-is-all-you-need/table3.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/table3.png" />
 
 이 모델의 구성은 위 표에서 마지막 행에 제시되어 있는 것과 같다. P100 GPU 8rodptj 3.5일 동안 학습하였으며, base model도 기존 공개된 모델 및 emsemble보다 뛰어난 성능을 보이며, 기존 모델보다 훨씬 낮은 학습 비용으로 훈련되었다.
 
@@ -270,7 +270,7 @@ constituency parsing` task에서 확인.
 
 이때, WSJ-only 설정에서는 16K vocab, semi-supervised 설정에서는 32K vocab을 사용했다고 한다. hyperparameter는 Section 22 development set에서 dropout(attention, residual), learning rate, beam size만 약간의 실험을 통해 조정되었고, 나머지는 English-to-German base model과 동일하게 유지하였다고 한다. 또, inference는 max output lenght = input length + 300을 사용하고, beam size=21, $\alpha=0.3$으로 고정하였다고 한다.
 
-<img src="images/paper_review/attention-is-all-you-need/table4.png" class="post_img"/>
+<img src="../../images/paper_review/attention-is-all-you-need/table4.png" />
 
 table 4에 따르면 특정 task에 특화된 tuning을 하지 않았음에도 transformer는 놀라운 성능을 보였다고 한다. 이는 Recurrent Neural Network Grammar을 제외한 모든 기존 모델보다 좋은 성능을 달성하였고, RNN 기반 sequence-to-sequence model들과 달리 tansformer는 WSJ 4만 문장만 사용했을 때도 BerkeleyParser을 능가했다고 한다.
 
