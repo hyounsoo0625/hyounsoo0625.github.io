@@ -2,7 +2,7 @@
   {
     "id": "1",
     "title": "Attention Is All You Need",
-    "date": "2025-12-20",
+    "date": "2025-12-22",
     "description": "Attention Is All You Need에 대한 논문 리뷰입니다.",
     "tags": [
       "Paper Review"
@@ -11,8 +11,18 @@
   },
   {
     "id": "2",
+    "title": "Enhancing CLIP Robustness via Cross Modality Alignment",
+    "date": "2025-12-22",
+    "description": "Enhancing CLIP Robustness via Cross Modality Alignment에 대한 논문 리뷰입니다.",
+    "tags": [
+      "Paper Review"
+    ],
+    "fileName": "Enhancing-CLIP-Robustness-via-Cross-Modality-Alignment.md"
+  },
+  {
+    "id": "3",
     "title": "LLMDet Learning Strong Open Vocabulary Object Detectors under the Supervision of Large Language Models",
-    "date": "2025-12-20",
+    "date": "2025-12-22",
     "description": "LLMDet Learning Strong Open Vocabulary Object Detectors under the Supervision of Large Language Models에 대한 논문 리뷰입니다.",
     "tags": [
       "Paper Review"
@@ -20,9 +30,9 @@
     "fileName": "LLMDet-Learning-Strong-Open-Vocabulary-Object-Detectors-under-the-Supervision-of-Large-Language-Models.md"
   },
   {
-    "id": "3",
+    "id": "4",
     "title": "NeRF Representing Scenes as Neural Radiance Fields for View Synthesis",
-    "date": "2025-12-20",
+    "date": "2025-12-22",
     "description": "NeRF Representing Scenes as Neural Radiance Fields for View Synthesis에 대한 논문 리뷰입니다.",
     "tags": [
       "Paper Review"
